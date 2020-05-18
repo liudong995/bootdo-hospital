@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.bootdo.system.dao.IntegralDao">
+
+	<select id="get" resultType="com.bootdo.system.domain.IntegralDO">
+		select `id`,`member_id`,`number`,`remark`,`create_id`,`create_time` from bts_integral where id = #{value}
+	</select>
+
+	<select id="list" resultType="com.bootdo.system.domain.IntegralDO">
+		select bi.`id`,bi.`member_id`,bi.`number`,bi.`remark`,bi.`create_id`,bi.`create_time`
+		,s.name as createName,
+		bm.name as memberName,bm.people_id as memberPeopleId
+		from bts_integral bi
+		 left join sys_user s on s.user_id=bi.create_id
+		 LEFT JOIN bts_member bm on bi.member_id= bm.id
+        <where>  
+		  		  <if test="id != null and id != ''"> and bi.id = #{id} </if>
+		  		  <if test="memberId != null and memberId != ''"> and bi.member_id = #{memberId} </if>
+		  		  <if test="number != null and number != ''"> and bi.number = #{number} </if>
+		  		  <if test="remark != null and remark != ''"> and bi.remark = #{remark} </if>
+		  		  <if test="createId != null and createId != ''"> and bi.create_id = #{createId} </if>
+		  		  <if test="createTime != null and createTime != ''"> and bi.create_time = #{createTime} </if>
+		  		  <if test="memberPeopleId != null and memberPeopleId != ''"> and bm.people_id = #{memberPeopleId} </if>
+		  		</where>
+        <choose>
+            <when test="sort != null and sort.trim() != ''">
+                order by ${sort} ${order}
+            </when>
+			<otherwise>
+                order by id desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+	
+ 	<select id="count" resultType="int">
+		select count(*) from bts_integral
+		 <where>  
+		  		  <if test="id != null and id != ''"> and id = #{id} </if>
+		  		  <if test="memberId != null and memberId != ''"> and member_id = #{memberId} </if>
+		  		  <if test="number != null and number != ''"> and number = #{number} </if>
+		  		  <if test="remark != null and remark != ''"> and remark = #{remark} </if>
+		  		  <if test="createId != null and createId != ''"> and create_id = #{createId} </if>
+		  		  <if test="createTime != null and createTime != ''"> and create_time = #{createTime} </if>
+		  		</where>
+	</select>
+	 
+	<insert id="save" parameterType="com.bootdo.system.domain.IntegralDO">
+		insert into bts_integral
+		(
+			`id`, 
+			`member_id`, 
+			`number`, 
+			`remark`, 
+			`create_id`, 
+			`create_time`
+		)
+		values
+		(
+			#{id}, 
+			#{memberId}, 
+			#{number}, 
+			#{remark}, 
+			#{createId}, 
+			#{createTime}
+		)
+	</insert>
+	 
+	<update id="update" parameterType="com.bootdo.system.domain.IntegralDO">
+		update bts_integral 
+		<set>
+			<if test="memberId != null">`member_id` = #{memberId}, </if>
+			<if test="number != null">`number` = #{number}, </if>
+			<if test="remark != null">`remark` = #{remark}, </if>
+			<if test="createId != null">`create_id` = #{createId}, </if>
+			<if test="createTime != null">`create_time` = #{createTime}</if>
+		</set>
+		where id = #{id}
+	</update>
+	
+	<delete id="remove">
+		delete from bts_integral where id = #{value}
+	</delete>
+	
+	<delete id="batchRemove">
+		delete from bts_integral where id in 
+		<foreach item="id" collection="array" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+	</delete>
+
+</mapper>

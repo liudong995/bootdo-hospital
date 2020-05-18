@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.bootdo.system.dao.MemberDao">
+
+	<select id="get" resultType="com.bootdo.system.domain.MemberDO">
+		select `id`,`name`,`sex`,`birthday`,`address`,`people_ID`,`integral`,`img`,`create_id`,`create_time`,`update_id`,`update_time` from bts_member where id = #{value}
+	</select>
+
+	<select id="list" resultType="com.bootdo.system.domain.MemberDO">
+		select bm.`id`,bm.`name`,bm.`sex`,bm.`birthday`,bm.`address`,bm.`people_ID`,bm.`integral`,bm.`img`,bm.`create_id`,bm.`create_time`,bm.`update_id`,bm.`update_time`,bm.phone
+		,s.name as createName,u.name as updateName
+		from bts_member bm
+		left join sys_user s on s.user_id=bm.create_id
+		LEFT JOIN sys_user u on u.user_id = bm.update_id
+
+        <where>  
+		  		  <if test="id != null and id != ''"> and id = #{id} </if>
+		  		  <if test="name != null and name != ''"> and bm.name = #{name} </if>
+		  		  <if test="sex != null and sex != ''"> and sex = #{sex} </if>
+		  		  <if test="birthday != null and birthday != ''"> and birthday = #{birthday} </if>
+		  		  <if test="address != null and address != ''"> and address = #{address} </if>
+		  		  <if test="peopleId != null and peopleId != ''"> and people_ID = #{peopleId} </if>
+		  		  <if test="integral != null and integral != ''"> and integral = #{integral} </if>
+		  		  <if test="img != null and img != ''"> and img = #{img} </if>
+		  		  <if test="createId != null and createId != ''"> and create_id = #{createId} </if>
+		  		  <if test="createTime != null and createTime != ''"> and create_time = #{createTime} </if>
+		  		  <if test="updateId != null and updateId != ''"> and update_id = #{updateId} </if>
+		  		  <if test="updateTime != null and updateTime != ''"> and update_time = #{updateTime} </if>
+		  		</where>
+        <choose>
+            <when test="sort != null and sort.trim() != ''">
+                order by ${sort} ${order}
+            </when>
+			<otherwise>
+                order by id desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+	
+ 	<select id="count" resultType="int">
+		select count(*) from bts_member
+		 <where>  
+		  		  <if test="id != null and id != ''"> and id = #{id} </if>
+		  		  <if test="name != null and name != ''"> and name = #{name} </if>
+		  		  <if test="sex != null and sex != ''"> and sex = #{sex} </if>
+		  		  <if test="birthday != null and birthday != ''"> and birthday = #{birthday} </if>
+		  		  <if test="address != null and address != ''"> and address = #{address} </if>
+		  		  <if test="peopleId != null and peopleId != ''"> and people_ID = #{peopleId} </if>
+		  		  <if test="integral != null and integral != ''"> and integral = #{integral} </if>
+		  		  <if test="img != null and img != ''"> and img = #{img} </if>
+		  		  <if test="createId != null and createId != ''"> and create_id = #{createId} </if>
+		  		  <if test="createTime != null and createTime != ''"> and create_time = #{createTime} </if>
+		  		  <if test="updateId != null and updateId != ''"> and update_id = #{updateId} </if>
+		  		  <if test="updateTime != null and updateTime != ''"> and update_time = #{updateTime} </if>
+		  		</where>
+	</select>
+	<select id="selectVo" resultType="com.bootdo.system.vo.MemberVO">
+		select id,concat(name,RIGHT(people_id, 4)) as name from bts_member
+	</select>
+    <select id="getModel" resultType="com.bootdo.system.domain.MemberDO">
+			select `id`,`name`,`sex`,phone,`birthday`,`address`,`people_ID`,`integral`,`img`,`create_id`,`create_time`,`update_id`,`update_time` from bts_member where people_ID = #{value}
+
+	</select>
+
+    <insert id="save" parameterType="com.bootdo.system.domain.MemberDO" useGeneratedKeys="true" keyProperty="id">
+		insert into bts_member
+		(
+			`name`, 
+			`sex`, 
+			`birthday`, 
+			`address`, 
+			`people_ID`, 
+			`integral`, 
+			`img`, 
+			`create_id`, 
+			`create_time`, 
+			`update_id`, 
+			`update_time`,
+			phone
+		)
+		values
+		(
+			#{name}, 
+			#{sex}, 
+			#{birthday}, 
+			#{address}, 
+			#{peopleId}, 
+			#{integral}, 
+			#{img}, 
+			#{createId}, 
+			#{createTime}, 
+			#{updateId}, 
+			#{updateTime},
+			#{phone}
+		)
+	</insert>
+    <update id="addIntegral">
+		update bts_member set integral=integral+#{integral} where id = #{id}
+	</update>
+
+    <update id="update" parameterType="com.bootdo.system.domain.MemberDO">
+		update bts_member 
+		<set>
+			<if test="name != null">`name` = #{name}, </if>
+			<if test="sex != null">`sex` = #{sex}, </if>
+			<if test="birthday != null">`birthday` = #{birthday}, </if>
+			<if test="address != null">`address` = #{address}, </if>
+			<if test="peopleId != null">`people_ID` = #{peopleId}, </if>
+			<if test="integral != null">`integral` = #{integral}, </if>
+			<if test="img != null">`img` = #{img}, </if>
+			<if test="createId != null">`create_id` = #{createId}, </if>
+			<if test="createTime != null">`create_time` = #{createTime}, </if>
+			<if test="updateId != null">`update_id` = #{updateId}, </if>
+			<if test="updateTime != null">`update_time` = #{updateTime}</if>
+			<if test="phone != null">`phone` = #{phone}</if>
+		</set>
+		where id = #{id}
+	</update>
+	
+	<delete id="remove">
+		delete from bts_member where id = #{value}
+	</delete>
+	
+	<delete id="batchRemove">
+		delete from bts_member where id in 
+		<foreach item="id" collection="array" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+	</delete>
+
+</mapper>

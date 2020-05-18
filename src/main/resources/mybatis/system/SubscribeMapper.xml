@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.bootdo.system.dao.SubscribeDao">
+
+	<select id="get" resultType="com.bootdo.system.domain.SubscribeDO">
+		select `id`,`user_id`,`member_id`,`dict_id`,`date`,`is_receive` from bts_subscribe where id = #{value}
+	</select>
+
+	<select id="list" resultType="com.bootdo.system.domain.SubscribeDO">
+		select bs.`id`,bs.`user_id`,bs.`member_id`,bs.`dict_id`,bs.`date`,bs.`is_receive`,
+		bm.name as memberName,
+		su.name as userName,
+		sd.value as dictValue
+		from bts_subscribe bs
+		left join bts_member bm on bs.member_id = bm.id
+		left join sys_user su on su.user_id = bs.user_id
+		LEFT JOIN sys_dict sd on bs.dict_id = sd.id
+
+        <where>  
+		  		  <if test="id != null and id != ''"> and id = #{id} </if>
+		  		  <if test="userId != null and userId != ''"> and user_id = #{userId} </if>
+		  		  <if test="memberId != null and memberId != ''"> and member_id = #{memberId} </if>
+		  		  <if test="dictId != null and dictId != ''"> and dict_id = #{dictId} </if>
+		  		  <if test="date != null and date != ''"> and date = #{date} </if>
+		  		  <if test="isReceive != null and isReceive != ''"> and is_receive = #{isReceive} </if>
+		  		</where>
+        <choose>
+            <when test="sort != null and sort.trim() != ''">
+                order by ${sort} ${order}
+            </when>
+			<otherwise>
+                order by id desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+	
+ 	<select id="count" resultType="int">
+		select count(*) from bts_subscribe
+		 <where>  
+		  		  <if test="id != null and id != ''"> and id = #{id} </if>
+		  		  <if test="userId != null and userId != ''"> and user_id = #{userId} </if>
+		  		  <if test="memberId != null and memberId != ''"> and member_id = #{memberId} </if>
+		  		  <if test="dictId != null and dictId != ''"> and dict_id = #{dictId} </if>
+		  		  <if test="date != null and date != ''"> and date = #{date} </if>
+		  		  <if test="isReceive != null and isReceive != ''"> and is_receive = #{isReceive} </if>
+		  		</where>
+	</select>
+	<select id="getUserSubscribe" resultType="com.bootdo.system.vo.UserSubscribeVo">
+		select sd.name as deptName,sd.dept_id as deptId,
+		su.name as doctorName,su.user_id as doct_id,
+		bs.date, bs.id , sdi.`value` as dictValue from sys_dept sd
+		left join sys_user su on sd.dept_id = su.dept_id
+		left join sys_user_role sur on su.user_id = sur.user_id
+		left join bts_subscribe bs on su.user_id = bs.user_id
+		left join sys_dict sdi on bs.dict_id = sdi.id
+		where bs.id > 0
+		<if test="deptId!=null">
+			AND sd.dept_id=#{deptId}
+		</if>
+		<if test="doctId!=null">
+			AND su.user_id=#{doctId}
+		</if>
+		<if test="date!=null">
+			AND to_days(bs.date)=to_days(#{date})
+		</if>
+		group by ${groupStr}
+	</select>
+
+	<insert id="save" parameterType="com.bootdo.system.domain.SubscribeDO" useGeneratedKeys="true" keyProperty="id">
+		insert into bts_subscribe
+		(
+			`user_id`, 
+			`member_id`, 
+			`dict_id`, 
+			`date`, 
+			`is_receive`
+		)
+		values
+		(
+			#{userId}, 
+			#{memberId}, 
+			#{dictId}, 
+			#{date}, 
+			#{isReceive}
+		)
+	</insert>
+	<insert id="saveList">
+			insert into bts_subscribe
+		(
+			`user_id`,
+			`dict_id`,
+			`date`,
+			create_id,
+			create_time
+		)
+		values
+		<foreach collection="list" index="index" separator="," item="subscribe">
+			(#{subscribe.userId},
+			#{subscribe.dictId},
+			#{subscribe.date},
+			#{subscribe.createId},
+			#{subscribe.createTime})
+		</foreach>
+	</insert>
+
+	<update id="update" parameterType="com.bootdo.system.domain.SubscribeDO">
+		update bts_subscribe 
+		<set>
+			<if test="userId != null">`user_id` = #{userId}, </if>
+			<if test="memberId != null">`member_id` = #{memberId}, </if>
+			<if test="dictId != null">`dict_id` = #{dictId}, </if>
+			<if test="date != null">`date` = #{date}, </if>
+			<if test="isReceive != null">`is_receive` = #{isReceive}</if>
+		</set>
+		where id = #{id}
+	</update>
+	
+	<delete id="remove">
+		delete from bts_subscribe where id = #{value}
+	</delete>
+	
+	<delete id="batchRemove">
+		delete from bts_subscribe where id in 
+		<foreach item="id" collection="array" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+	</delete>
+
+	<update id="updateSubcribe">
+		update bts_subscribe
+		set `member_id` = #{memberId}
+		where id = #{id}
+	</update>
+	<select id="getUserSubscribeHistory" resultType="com.bootdo.system.vo.UserSubscribeVo">
+		select sd.name as deptName,sd.dept_id as deptId,
+		su.name as doctorName,su.user_id as doct_id,
+		bs.date, bs.id , sdi.`value` as dictValue from sys_dept sd
+		left join sys_user su on sd.dept_id = su.dept_id
+		left join sys_user_role sur on su.user_id = sur.user_id
+		left join bts_subscribe bs on su.user_id = bs.user_id
+		left join sys_dict sdi on bs.dict_id = sdi.id
+		where bs.id > 0
+		bs.people_ID=#{peopleId}
+		group by bs.id
+	</select>
+
+</mapper>
